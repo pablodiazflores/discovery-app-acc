@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Entrevista ACC Build · Aeropuerto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────── */
+:root{
+  --n9:#061528;--n8:#0A2540;--n7:#122E54;--n6:#1E3A66;
+  --b5:#2563EB;--b4:#3B82F6;--b1:#DBEAFE;--b0:#EFF6FF;
+  --s9:#0F172A;--s7:#334155;--s6:#475569;--s5:#64748B;--s4:#94A3B8;
+  --s3:#CBD5E1;--s2:#E2E8F0;--s1:#F1F5F9;--s0:#F8FAFC;
+  --w:#fff;--ok:#047857;--ok-bg:#D1FAE5;--warn:#B45309;--warn-bg:#FEF3C7;
+  --err:#DC2626;--err-bg:#FEE2E2;
+  --fd:'Sora',system-ui,sans-serif;
+  --fb:'Manrope',system-ui,sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --r:8px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fb);color:var(--s7);background:var(--s0);font-size:14px;-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar{
+  background:var(--n9);color:var(--w);
+  padding:0 24px;height:52px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;flex-shrink:0;
+  position:sticky;top:0;z-index:200;
+}
+.tb-brand{display:flex;align-items:center;gap:9px;font-family:var(--fd);font-weight:600;font-size:13px}
+.tb-logo{width:16px;height:16px;background:var(--b4);clip-path:polygon(0 0,100% 0,100% 62%,62% 100%,0 100%)}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-badge{font-family:var(--fm);font-size:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:3px 10px;border-radius:99px;color:var(--s4)}
+.tb-badge.active{background:rgba(59,130,246,.25);border-color:var(--b4);color:#93C5FD}
+#timerDisplay{font-family:var(--fm);font-size:12px;color:#FCA5A5;display:none;align-items:center;gap:5px}
+#timerDisplay.running{display:flex}
+.timer-dot{width:6px;height:6px;border-radius:50%;background:#EF4444;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tb-person{font-size:12px;color:var(--s4);font-family:var(--fm);display:none}
+.tb-person.show{display:block}
+
+/* ── PROGRESS BAR (top) ─────────────────────────────────────── */
+.progress-bar{height:3px;background:rgba(255,255,255,.08);position:relative}
+.progress-bar-fill{height:100%;background:var(--b4);transition:width .4s ease;width:0%}
+
+/* ── MAIN CONTENT ───────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column}
+
+/* ── SCREENS ────────────────────────────────────────────────── */
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── SCREEN: WELCOME ────────────────────────────────────────── */
+#s-welcome{align-items:center;justify-content:center;padding:40px 20px;background:linear-gradient(160deg,var(--n8) 0%,var(--n7) 100%);color:var(--w);min-height:calc(100vh - 55px)}
+.wlc-inner{max-width:520px;width:100%;text-align:center}
+.wlc-icon{width:64px;height:64px;background:linear-gradient(135deg,var(--b5),var(--b4));border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 24px;box-shadow:0 8px 24px rgba(37,99,235,.4)}
+.wlc-h1{font-family:var(--fd);font-size:30px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.wlc-sub{color:var(--s4);font-size:14px;line-height:1.6;margin-bottom:32px}
+.wlc-meta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:36px}
+.wlc-chip{font-family:var(--fm);font-size:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);padding:4px 12px;border-radius:99px;color:var(--s4)}
+.wlc-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-primary{font-family:var(--fb);font-size:13px;font-weight:600;padding:12px 28px;border-radius:var(--r);background:var(--b5);color:var(--w);border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--b4);transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.4)}
+.btn-ghost{font-family:var(--fb);font-size:12px;font-weight:500;padding:11px 20px;border-radius:var(--r);background:transparent;color:var(--s4);border:1px solid rgba(255,255,255,.12);cursor:pointer;transition:all .15s}
+.btn-ghost:hover{background:rgba(255,255,255,.06);color:var(--w)}
+.resume-notice{font-size:11px;color:var(--s5);font-family:var(--fm);margin-top:14px;display:none}
+.resume-notice.show{display:block}
+
+/* ── SCREEN: SETUP ──────────────────────────────────────────── */
+#s-setup{background:var(--s0)}
+.screen-shell{max-width:720px;width:100%;margin:0 auto;padding:36px 20px 60px}
+.screen-header{margin-bottom:28px}
+.screen-eyebrow{font-family:var(--fm);font-size:10px;color:var(--b5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.screen-h{font-family:var(--fd);font-size:24px;font-weight:700;color:var(--s9);letter-spacing:-.02em;margin-bottom:6px}
+.screen-desc{font-size:13px;color:var(--s5);line-height:1.6}
+.card{background:var(--w);border-radius:var(--rl);border:1px solid var(--s2);padding:22px 24px;margin-bottom:16px}
+.card-title{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--s9);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.field-grid.g1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;font-weight:700;color:var(--s5);text-transform:uppercase;letter-spacing:.07em;font-family:var(--fm)}
+.field input,.field select,.field textarea{
+  font-family:var(--fb);font-size:13px;color:var(--s9);
+  border:1.5px solid var(--s2);border-radius:var(--r);padding:9px 12px;
+  background:var(--w);transition:border-color .15s,box-shadow .15s;outline:none;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--b4);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.field textarea{min-height:72px;resize:vertical}
+
+/* ── SCREEN: ROLE SELECTION ─────────────────────────────────── */
+#s-role{background:var(--s0)}
+.role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:6px}
+.role-card{
+  border:2px solid var(--s2);border-radius:var(--rl);padding:20px 12px 16px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--w);
+}
+.role-card:hover{border-color:var(--b4);background:var(--b0);transform:translateY(-2px)}
+.role-card.sel{border-color:var(--b5);background:var(--b0);box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+.role-card input{display:none}
+.role-icon{font-size:28px;margin-bottom:10px}
+.role-name{font-family:var(--fd);font-size:12px;font-weight:600;color:var(--s7);line-height:1.4}
+.role-card.sel .role-name{color:var(--n7)}
+.role-count{font-family:var(--fm);font-size:10px;color:var(--s5);margin-top:4px}
+
+/* ── SCREEN: INTERVIEW ──────────────────────────────────────── */
+#s-interview{background:var(--n8);color:var(--w);min-height:calc(100vh - 55px)}
+.iv-shell{max-width:780px;width:100%;margin:0 auto;padding:32px 24px 40px;display:flex;flex-direction:column;min-height:calc(100vh - 58px)}
+.iv-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px}
+.iv-q-counter{font-family:var(--fm);font-size:11px;color:var(--s5);display:flex;align-items:center;gap:8px}
+.iv-q-dots{display:flex;gap:4px;flex-wrap:wrap;max-width:240px}
+.q-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .3s;cursor:pointer;flex-shrink:0}
+.q-dot.done{background:var(--ok)}
+.q-dot.active{background:var(--b4);box-shadow:0 0 0 3px rgba(59,130,246,.3)}
+.q-dot.flag{background:var(--warn)}
+.iv-flag-btn{
+  display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;font-family:var(--fm);
+  padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);color:var(--s4);cursor:pointer;transition:all .2s;
+}
+.iv-flag-btn:hover,.iv-flag-btn.flagged{background:rgba(180,83,9,.25);border-color:var(--warn);color:#FCD34D}
+
+.iv-q-body{flex:1;display:flex;flex-direction:column}
+.iv-q-num{font-family:var(--fm);font-size:12px;color:var(--b4);letter-spacing:.1em;margin-bottom:16px;text-transform:uppercase}
+.iv-q-text{font-family:var(--fd);font-size:22px;font-weight:500;color:var(--w);line-height:1.45;margin-bottom:24px;letter-spacing:-.01em}
+.iv-q-hint{font-size:12px;color:var(--s5);margin-bottom:20px;font-style:italic}
+.iv-answer{
+  flex:1;width:100%;min-height:180px;background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.10);border-radius:var(--r);
+  color:var(--w);font-family:var(--fb);font-size:15px;line-height:1.65;
+  padding:16px 18px;resize:none;outline:none;transition:border-color .2s,background .2s;
+  caret-color:var(--b4);
+}
+.iv-answer::placeholder{color:rgba(255,255,255,.2)}
+.iv-answer:focus{border-color:rgba(59,130,246,.5);background:rgba(255,255,255,.07)}
+.iv-answer.has-content{border-color:rgba(4,120,87,.4);background:rgba(4,120,87,.05)}
+
+.iv-nav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:10px;flex-wrap:wrap}
+.iv-nav-left{display:flex;gap:8px}
+.iv-nav-right{display:flex;gap:8px}
+.nav-btn{
+  font-family:var(--fb);font-size:12px;font-weight:600;padding:10px 20px;border-radius:var(--r);
+  border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);
+  color:var(--w);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+}
+.nav-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.nav-btn.next{background:var(--b5);border-color:var(--b5)}
+.nav-btn.next:hover{background:var(--b4)}
+.nav-btn.finish{background:var(--ok);border-color:var(--ok)}
+.nav-btn.finish:hover{background:#059669}
+.iv-shortcut{font-family:var(--fm);font-size:10px;color:var(--s6);margin-top:8px;text-align:right}
+
+/* ── SCREEN: WRAP (flags + complementary) ───────────────────── */
+#s-wrap{background:var(--s0)}
+.section-divider{height:1px;background:var(--s2);margin:20px 0}
+.flags-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
+.flag-item{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  border-radius:var(--r);border:1.5px solid var(--s2);background:var(--w);cursor:pointer;
+  transition:all .15s;
+}
+.flag-item:hover{border-color:var(--s3)}
+.flag-item input{width:16px;height:16px;accent-color:var(--b5);flex-shrink:0;margin-top:1px;cursor:pointer}
+.flag-item-body{flex:1}
+.flag-item-title{font-size:12px;font-weight:600;color:var(--s9);font-family:var(--fd);display:flex;align-items:center;gap:6px}
+.flag-item-desc{font-size:11px;color:var(--s5);margin-top:3px;line-height:1.4}
+.flag-item.lvl-h{border-left:3px solid var(--err)}
+.flag-item.lvl-m{border-left:3px solid var(--warn)}
+.flag-item.lvl-l{border-left:3px solid var(--b4)}
+.flag-item.checked{background:var(--warn-bg);border-color:var(--warn)}
+.flag-item.checked.lvl-h{background:var(--err-bg);border-color:var(--err)}
+.badge{font-family:var(--fm);font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+.bh{background:var(--err-bg);color:var(--err)}
+.bm{background:var(--warn-bg);color:var(--warn)}
+.bl{background:var(--b0);color:var(--b5)}
+
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.pill-opt input{display:none}
+.pill-opt label{font-size:11px;font-family:var(--fm);padding:5px 12px;border-radius:99px;border:1.5px solid var(--s3);background:var(--w);color:var(--s6);cursor:pointer;transition:all .15s;display:block}
+.pill-opt input:checked+label{background:var(--n8);color:var(--w);border-color:var(--n8)}
+
+/* ── SCREEN: PERMISSIONS ────────────────────────────────────── */
+#s-perms{background:var(--s0)}
+.mx-wrap{overflow-x:auto}
+.mx-tbl{border-collapse:collapse;width:100%;font-size:12px}
+.mx-tbl th{background:var(--n8);color:var(--w);padding:9px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.mx-tbl th.mod-h{text-align:left;background:var(--s1);color:var(--s6);min-width:100px}
+.mx-tbl td{border:1px solid var(--s2);padding:6px 8px;text-align:center;vertical-align:middle}
+.mx-tbl td.mod-name{background:var(--s0);color:var(--s7);font-weight:600;text-align:left;font-size:12px;white-space:nowrap;padding:8px 12px}
+.perm-sel{font-family:var(--fm);font-size:11px;border:1.5px solid var(--s2);border-radius:5px;padding:4px 5px;background:var(--w);cursor:pointer;width:82px;outline:none;transition:border-color .15s}
+.perm-sel:focus{border-color:var(--b4)}
+.perm-sel.vO{background:#EDE9FE;border-color:#7C3AED;color:#4C1D95}
+.perm-sel.vA{background:var(--ok-bg);border-color:var(--ok);color:#065F46}
+.perm-sel.vE{background:var(--b1);border-color:var(--b5);color:#1E3A8A}
+.perm-sel.vV{background:var(--s1);border-color:var(--s3);color:var(--s6)}
+.perm-note{border:1px solid var(--s2);border-radius:5px;padding:4px 8px;font-size:11px;font-family:var(--fb);color:var(--s7);width:100%;background:var(--w);outline:none}
+.perm-note:focus{border-color:var(--b4)}
+
+/* ── SCREEN: EXPORT ─────────────────────────────────────────── */
+#s-export{background:var(--s0)}
+.export-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.sum-card{background:var(--w);border-radius:var(--r);border:1px solid var(--s2);padding:14px 16px;text-align:center}
+.sum-val{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--n8)}
+.sum-label{font-size:11px;color:var(--s5);margin-top:3px;font-family:var(--fm)}
+.md-preview{background:var(--s9);color:#93C5FD;border-radius:var(--r);padding:18px;font-family:var(--fm);font-size:11px;line-height:1.75;white-space:pre-wrap;max-height:400px;overflow-y:auto;display:none;margin-top:14px}
+.export-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── SHARED BUTTONS ─────────────────────────────────────────── */
+.btn{
+  font-family:var(--fb);font-size:12px;font-weight:600;padding:10px 20px;
+  border-radius:var(--r);cursor:pointer;transition:all .15s;
+  display:inline-flex;align-items:center;gap:7px;border:1.5px solid transparent;
+}
+.btn-solid{background:var(--n8);color:var(--w);border-color:var(--n8)}
+.btn-solid:hover{background:var(--n7)}
+.btn-blue{background:var(--b5);color:var(--w);border-color:var(--b5)}
+.btn-blue:hover{background:var(--b4)}
+.btn-green{background:var(--ok);color:var(--w);border-color:var(--ok)}
+.btn-green:hover{background:#059669}
+.btn-outline{background:var(--w);color:var(--s7);border-color:var(--s3)}
+.btn-outline:hover{background:var(--s1);border-color:var(--s4)}
+.btn-red{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+.btn-red:hover{background:#FCA5A5;border-color:var(--err)}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+.screen-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:28px;padding-top:20px;border-top:1px solid var(--s2);flex-wrap:wrap;
+}
+.save-indicator{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--s5)}
+.save-dot{width:6px;height:6px;border-radius:50%;background:var(--s4)}
+.save-dot.ok{background:var(--ok)}
+.save-dot.saving{background:var(--warn);animation:blink 1s infinite}
+
+/* ── MISC ───────────────────────────────────────────────────── */
+.hint{font-size:11px;color:var(--s5);margin-top:5px;font-style:italic}
+.tag{font-family:var(--fm);font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;display:inline-block}
+.tag-criba{background:#FEE2E2;color:#991B1B}
+.tag-adek{background:var(--b1);color:#1E40AF}
+.tag-sub{background:var(--s1);color:var(--s6)}
+
+@media(max-width:600px){
+  .field-grid,.field-grid.g3{grid-template-columns:1fr}
+  .role-grid{grid-template-columns:repeat(3,1fr)}
+  .iv-q-text{font-size:18px}
+  .wlc-h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo"></div>
+    <span>Discovery ACC · Aeropuerto</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-badge active" id="tbStep">Inicio</span>
+    <span class="tb-person" id="tbPerson"></span>
+    <div id="timerDisplay">
+      <div class="timer-dot"></div>
+      <span id="timerVal">00:00</span>
+    </div>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-bar-fill" id="globalBar"></div></div>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: WELCOME                                           -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="s-welcome">
+  <div class="wlc-inner">
+    <div class="wlc-icon">📋</div>
+    <h1 class="wlc-h1">Formulario de Entrevista</h1>
+    <p class="wlc-sub">Discovery de Roles ACC Build · Proyecto Aeropuerto<br>Consultoría Adekalyseis para Criba</p>
+    <div class="wlc-meta">
+      <span class="wlc-chip">6 perfiles de rol</span>
+      <span class="wlc-chip">7 bloques de preguntas</span>
+      <span class="wlc-chip">Exporta Markdown D1</span>
+    </div>
+    <div class="wlc-actions">
+      <button class="btn-primary" onclick="goTo('s-setup')">
+        <span>Nueva entrevista</span> <span>→</span>
+      </button>
+      <button class="btn-ghost" id="btnResume" onclick="resumeSession()" style="display:none">
+        Retomar sesión guardada
+      </button>
+    </div>
+    <p class="resume-notice" id="resumeNotice"></p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: SETUP                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-setup">
+  <div class="screen-shell">
+    <div class="screen-header">
+      <div class="screen-eyebrow">Paso 1 de 5</div>
+      <h2 class="screen-h">¿A quién vamos a entrevistar?</h2>
+      <p class="screen-desc">Completá los datos básicos del profesional antes de comenzar la sesión.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">👤 Datos del entrevistado</div>
+      <div class="field-grid" style="margin-bottom:12px">
+        <div class="field">
+          <label>Nombre completo *</label>
+          <input id="f-nombre" type="text" placeholder="Ej. Martín Rodríguez" oninput="autosave()"/>
+        </div>
+        <div class="field">
+          <label>Cargo / Título *</label>
+          <input id="f-cargo" type="text" placeholder="Ej. Jefe de Obra" oninput="autosave()"/>
+        </div>
+      </div>
+      <div class="field-grid g3" style="margin-bottom:12px">
+        <div class="field">
+          <label>Organización *</label>
+          <select id="f-org" onchange="autosave()">
+            <option value="">— elegir —</option>
+            <option value="CRIBA">CRIBA</option>
+            <option value="ADEK">Adekalyseis (ADEK)</option>
+            <option value="SUB">Subcontratista</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Empresa (si SUB / OTRO)</label>
+          <input id="f-empresa" type="text" placeholder="Nombre empresa" oninput="autosave()"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="f-email" type="email" placeholder="correo@empresa.com" oninput="autosave()"/>
+        </div>
+      </div>
+      <div class="field-grid g3">
+        <div class="field">
+          <label>Fecha</label>
+          <input id="f-fecha" type="date" oninput="autosave()"/>
+        </div>
+        <div class="field">
+          <label>Hora inicio</label>
+          <input id="f-hora" type="time" oninput="autosave()"/>
+        </div>
+        <div class="field">
+          <label>Modalidad</label>
+          <select id="f-modalidad" onchange="autosave()">
+            <option value="Presencial">Presencial</option>
+            <option value="Virtual · Teams">Virtual · Teams</option>
+            <option value="Virtual · Zoom">Virtual · Zoom</option>
+            <option value="Telefónica">Telefónica</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📝 Contexto previo</div>
+      <div class="field">
+        <label>Observaciones previas a la sesión</label>
+        <textarea id="f-obs-previas" rows="2" placeholder="Referencias, actitud inicial esperada, contexto relevante…" oninput="autosave()"></textarea>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <div class="save-indicator"><div class="save-dot" id="dot1"></div><span id="lbl1">sin cambios</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="goTo('s-welcome')">← Volver</button>
+        <button class="btn btn-solid" onclick="validateSetup()">Siguiente → Perfil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: ROLE SELECTION                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-role">
+  <div class="screen-shell">
+    <div class="screen-header">
+      <div class="screen-eyebrow">Paso 2 de 5</div>
+      <h2 class="screen-h">¿Cuál es el perfil del entrevistado?</h2>
+      <p class="screen-desc">El perfil determina el bloque de preguntas a aplicar durante la sesión.</p>
+    </div>
+    <div class="card">
+      <div class="role-grid" id="roleGrid">
+        <label class="role-card" data-role="directivos">
+          <div class="role-icon">🏛</div>
+          <div class="role-name">Directivos</div>
+          <div class="role-count">10 preguntas</div>
+        </label>
+        <label class="role-card" data-role="bim">
+          <div class="role-icon">🧩</div>
+          <div class="role-name">Equipo BIM</div>
+          <div class="role-count">12 preguntas</div>
+        </label>
+        <label class="role-card" data-role="obra">
+          <div class="role-icon">🏗</div>
+          <div class="role-name">Obra · Disciplinas</div>
+          <div class="role-count">11 preguntas</div>
+        </label>
+        <label class="role-card" data-role="calidad">
+          <div class="role-icon">✅</div>
+          <div class="role-name">Calidad y SST</div>
+          <div class="role-count">10 preguntas</div>
+        </label>
+        <label class="role-card" data-role="planco">
+          <div class="role-icon">📊</div>
+          <div class="role-name">Planificación · Costos</div>
+          <div class="role-count">10 preguntas</div>
+        </label>
+        <label class="role-card" data-role="sub">
+          <div class="role-icon">🔧</div>
+          <div class="role-name">Subcontratistas</div>
+          <div class="role-count">9 preguntas</div>
+        </label>
+      </div>
+      <p class="hint" style="margin-top:12px">Seleccioná el perfil más representativo. Si tiene dos roles, elegí el más operativo.</p>
+    </div>
+    <div id="rolePreview" style="display:none" class="card" id="rolePreviewCard">
+      <div class="card-title" id="rpTitle"></div>
+      <p id="rpIntro" style="font-size:12px;color:var(--s6);line-height:1.6;font-style:italic;border-left:3px solid var(--b4);padding-left:12px;margin-bottom:10px"></p>
+      <div id="rpQList" style="font-size:12px;color:var(--s7)"></div>
+    </div>
+    <div class="screen-footer">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="goTo('s-setup')">← Volver</button>
+        <button class="btn btn-solid" id="btnStartInterview" disabled onclick="startInterview()">Comenzar entrevista →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: INTERVIEW                                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-interview">
+  <div class="iv-shell">
+    <div class="iv-meta">
+      <div class="iv-q-counter">
+        <span id="ivQLabel">Pregunta 1 / 10</span>
+        <div class="iv-q-dots" id="ivDots"></div>
+      </div>
+      <button class="iv-flag-btn" id="ivFlagBtn" onclick="toggleQuestionFlag()">
+        <span>⚑</span> <span id="ivFlagLabel">Marcar bandera</span>
+      </button>
+    </div>
+    <div class="iv-q-body">
+      <div class="iv-q-num" id="ivQNum">PREGUNTA 01</div>
+      <div class="iv-q-text" id="ivQText"></div>
+      <textarea class="iv-answer" id="ivAnswer" rows="6"
+        placeholder="Escribí la respuesta del entrevistado…"
+        oninput="onAnswerInput()"></textarea>
+    </div>
+    <div>
+      <div class="iv-nav">
+        <div class="iv-nav-left">
+          <button class="nav-btn" id="btnPrev" onclick="prevQ()">← Anterior</button>
+        </div>
+        <div class="iv-nav-right">
+          <button class="nav-btn" id="btnSkip" onclick="skipQ()">Omitir</button>
+          <button class="nav-btn next" id="btnNext" onclick="nextQ()">Siguiente →</button>
+        </div>
+      </div>
+      <div class="iv-shortcut">Ctrl + Enter = siguiente · Ctrl + ← = anterior</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: WRAP (datos complementarios + banderas)          -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-wrap">
+  <div class="screen-shell">
+    <div class="screen-header">
+      <div class="screen-eyebrow">Paso 4 de 5</div>
+      <h2 class="screen-h">Datos complementarios y banderas</h2>
+      <p class="screen-desc">Completá la información operativa y marcá las señales detectadas durante la entrevista.</p>
+    </div>
+
+    <!-- datos operativos -->
+    <div class="card">
+      <div class="card-title">⚙️ Datos operativos</div>
+      <div class="field-grid g3" style="margin-bottom:12px">
+        <div class="field">
+          <label>Experiencia en ACC Build</label>
+          <select id="w-exp" onchange="autosave()">
+            <option value="">— seleccionar —</option>
+            <option>Ninguna (nunca usó ACC)</option>
+            <option>Básica (tutoriales / exploración)</option>
+            <option>Media (1-2 proyectos cortos)</option>
+            <option>Avanzada (varios proyectos)</option>
+            <option>Experto (administración, templates)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dispositivo en obra</label>
+          <select id="w-dispositivo" onchange="autosave()">
+            <option value="">— seleccionar —</option>
+            <option>Laptop / PC escritorio</option>
+            <option>Tablet Android</option>
+            <option>iPad</option>
+            <option>Smartphone</option>
+            <option>Sin dispositivo propio</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Conectividad en zona</label>
+          <select id="w-conectividad" onchange="autosave()">
+            <option value="">— seleccionar —</option>
+            <option>Buena (4G / WiFi estable)</option>
+            <option>Intermitente</option>
+            <option>Deficiente (zonas muertas)</option>
+            <option>Sin señal (lado aire)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid" style="margin-bottom:12px">
+        <div class="field">
+          <label>¿Necesita licencia ACC de Adekalyseis?</label>
+          <div class="pill-row">
+            <div class="pill-opt"><input type="radio" name="wlic" id="wlic1" value="Sí, necesita licencia" onchange="autosave()"><label for="wlic1">Sí</label></div>
+            <div class="pill-opt"><input type="radio" name="wlic" id="wlic2" value="No (tiene propia)" onchange="autosave()"><label for="wlic2">No (tiene propia)</label></div>
+            <div class="pill-opt"><input type="radio" name="wlic" id="wlic3" value="A confirmar" onchange="autosave()"><label for="wlic3">A confirmar</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>¿Requiere capacitación?</label>
+          <div class="pill-row">
+            <div class="pill-opt"><input type="radio" name="wcap" id="wcap1" value="Sí, capacitación completa" onchange="autosave()"><label for="wcap1">Sí</label></div>
+            <div class="pill-opt"><input type="radio" name="wcap" id="wcap2" value="No (autónomo)" onchange="autosave()"><label for="wcap2">No</label></div>
+            <div class="pill-opt"><input type="radio" name="wcap" id="wcap3" value="Repaso puntual" onchange="autosave()"><label for="wcap3">Repaso</label></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Herramientas digitales que usa hoy</label>
+        <input id="w-herramientas" type="text" placeholder="Ej. Excel, WhatsApp, OneDrive, Procore, Navisworks…" oninput="autosave()"/>
+      </div>
+    </div>
+
+    <!-- banderas -->
+    <div class="card">
+      <div class="card-title">⚑ Banderas detectadas</div>
+      <div class="flags-grid">
+        <label class="flag-item lvl-h" id="fi-res">
+          <input type="checkbox" value="Resistencia explícita al cambio" onchange="flagToggle(this,'fi-res')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Resistencia al cambio <span class="badge bh">ALTA</span></div>
+            <div class="flag-item-desc">Descalifica la herramienta o menciona que siempre lo hizo de otra manera</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-h" id="fi-con">
+          <input type="checkbox" value="Sin conectividad en zona operativa" onchange="flagToggle(this,'fi-con')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Sin conectividad operativa <span class="badge bh">ALTA</span></div>
+            <div class="flag-item-desc">Zonas muertas o restricciones electromagnéticas (lado aire)</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-m" id="fi-cap">
+          <input type="checkbox" value="Gap de capacitación severo" onchange="flagToggle(this,'fi-cap')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Gap de capacitación severo <span class="badge bm">MEDIA</span></div>
+            <div class="flag-item-desc">Cero exposición previa a ACC y baja exposición digital en general</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-m" id="fi-jer">
+          <input type="checkbox" value="Conflictos jerárquicos no resueltos" onchange="flagToggle(this,'fi-jer')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Conflictos jerárquicos <span class="badge bm">MEDIA</span></div>
+            <div class="flag-item-desc">Confusión sobre a quién reporta o disputas de territorio con otro rol</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-m" id="fi-dup">
+          <input type="checkbox" value="Duplicidad con herramientas existentes" onchange="flagToggle(this,'fi-dup')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Duplicidad de herramientas <span class="badge bm">MEDIA</span></div>
+            <div class="flag-item-desc">Va a seguir usando Excel / WhatsApp / email en paralelo con ACC</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-l" id="fi-lic">
+          <input type="checkbox" value="Licencia no asignada" onchange="flagToggle(this,'fi-lic')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Licencia no asignada <span class="badge bl">BAJA</span></div>
+            <div class="flag-item-desc">Rol activo pero sin acceso técnico resuelto</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-l" id="fi-exp">
+          <input type="checkbox" value="Expectativas desalineadas con ACC" onchange="flagToggle(this,'fi-exp')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Expectativas desalineadas <span class="badge bl">BAJA</span></div>
+            <div class="flag-item-desc">Espera funcionalidades que ACC no ofrece de fábrica</div>
+          </div>
+        </label>
+        <label class="flag-item lvl-l" id="fi-acc">
+          <input type="checkbox" value="Solicitud de acceso fuera de rol" onchange="flagToggle(this,'fi-acc')"/>
+          <div class="flag-item-body">
+            <div class="flag-item-title">Acceso fuera de rol <span class="badge bl">BAJA</span></div>
+            <div class="flag-item-desc">Pide acceso a módulos que exceden su función (Cost, contratos)</div>
+          </div>
+        </label>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Descripción / contexto de las banderas marcadas</label>
+        <textarea id="w-flags-det" rows="2" placeholder="Describí el momento o la frase que llevó a marcar cada bandera…" oninput="autosave()"></textarea>
+      </div>
+    </div>
+
+    <!-- notas del consultor -->
+    <div class="card">
+      <div class="card-title">🔒 Observaciones del consultor (confidencial)</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Evaluación general de la sesión</label>
+        <div class="pill-row">
+          <div class="pill-opt"><input type="radio" name="weval" id="we1" value="Muy productiva" onchange="autosave()"><label for="we1">Muy productiva</label></div>
+          <div class="pill-opt"><input type="radio" name="weval" id="we2" value="Productiva" onchange="autosave()"><label for="we2">Productiva</label></div>
+          <div class="pill-opt"><input type="radio" name="weval" id="we3" value="Regular" onchange="autosave()"><label for="we3">Regular</label></div>
+          <div class="pill-opt"><input type="radio" name="weval" id="we4" value="Poco productiva" onchange="autosave()"><label for="we4">Poco productiva</label></div>
+        </div>
+      </div>
+      <div class="field-grid g1" style="gap:10px">
+        <div class="field">
+          <label>Perfil digital percibido por el consultor</label>
+          <textarea id="w-perfil" rows="2" placeholder="Percepción sobre la madurez digital real del entrevistado…" oninput="autosave()"></textarea>
+        </div>
+        <div class="field">
+          <label>Compromisos asumidos durante la entrevista</label>
+          <textarea id="w-compromisos" rows="2" placeholder="Ej. Revisará tutorial de ACC antes del kickoff…" oninput="autosave()"></textarea>
+        </div>
+        <div class="field">
+          <label>Próximos pasos acordados</label>
+          <textarea id="w-pasos" rows="2" placeholder="Ej. Enviar credencial el lunes, agendar onboarding…" oninput="autosave()"></textarea>
+        </div>
+        <div class="field">
+          <label>Notas internas del consultor</label>
+          <textarea id="w-notas" rows="3" placeholder="Impresiones, tensiones observadas, detalles de contexto…" oninput="autosave()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-footer">
+      <div class="save-indicator"><div class="save-dot" id="dot4"></div><span id="lbl4">autosave</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="goTo('s-interview')">← Volver a preguntas</button>
+        <button class="btn btn-solid" onclick="goTo('s-perms')">Siguiente → Permisos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: PERMISSIONS                                       -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-perms">
+  <div class="screen-shell">
+    <div class="screen-header">
+      <div class="screen-eyebrow">Paso 5 de 5</div>
+      <h2 class="screen-h">Permisos por módulo ACC Build</h2>
+      <p class="screen-desc">Los valores se pre-cargan según el perfil elegido. Ajustá caso por caso según lo conversado.</p>
+    </div>
+    <div class="card">
+      <div class="mx-wrap">
+        <table class="mx-tbl">
+          <thead>
+            <tr>
+              <th class="mod-h">Módulo</th>
+              <th style="min-width:100px">Nivel de acceso</th>
+              <th style="text-align:left;background:var(--s1);color:var(--s5);min-width:180px">Justificación / nota</th>
+            </tr>
+          </thead>
+          <tbody id="permBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="goTo('s-wrap')">← Volver</button>
+        <button class="btn btn-green" onclick="goTo('s-export')">Finalizar y exportar ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SCREEN: EXPORT                                            -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-export">
+  <div class="screen-shell">
+    <div class="screen-header">
+      <div class="screen-eyebrow">Expediente D1 listo</div>
+      <h2 class="screen-h" id="expTitle">Entrevista finalizada</h2>
+      <p class="screen-desc" id="expSubtitle">Revisá el resumen y descargá el Markdown firmado.</p>
+    </div>
+    <div class="export-summary" id="expSummary"></div>
+    <div class="card">
+      <div class="export-actions" style="margin-bottom:12px">
+        <button class="btn btn-green" onclick="downloadMD()">⬇ Descargar .md</button>
+        <button class="btn btn-outline" onclick="togglePreview()">👁 Vista previa Markdown</button>
+        <button class="btn btn-outline" onclick="window.print()">🖨 Imprimir PDF</button>
+        <button class="btn btn-red" onclick="newSession()">↺ Nueva entrevista</button>
+      </div>
+      <pre class="md-preview" id="mdPreview"></pre>
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      <button class="btn btn-outline" onclick="goTo('s-perms')">← Editar permisos</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════════ */
+const Q = {
+  directivos:{
+    label:'Directivos · Gerente / Director / Jefe de Obra',
+    intro:'Objetivo: capturar expectativas estratégicas, criterios de éxito y posición frente a la adopción de ACC. El directivo no opera el sistema día a día, pero es quien autoriza la configuración y quien va a leer los reportes.',
+    qs:[
+      '¿Qué problemas concretos esperás resolver con ACC en este proyecto? Dame 2 o 3 ejemplos.',
+      '¿Qué reportes querés recibir, con qué frecuencia y de qué módulos?',
+      '¿Cuál es tu nivel de tolerancia para issues abiertos, RFIs pendientes y SDI demorados? Definamos umbrales.',
+      '¿Qué decisiones del proyecto querés que se documenten obligatoriamente en ACC versus las que pueden quedar en otros canales?',
+      '¿Quién tiene autoridad para aprobar adicionales, cambios de alcance y reprogramaciones? ¿Lo querés visible en ACC Cost?',
+      '¿Cómo manejaste herramientas similares en proyectos anteriores? ¿Qué funcionó y qué no?',
+      '¿Estás dispuesto a que la firma de planos y aprobaciones sea 100% digital en ACC Reviews?',
+      '¿Cuál es tu posición sobre dar acceso lectura al cliente / fiscalización en módulos seleccionados?',
+      '¿Qué tipo de dashboard ejecutivo te resultaría útil en Insight?',
+      '¿Cuál es la métrica única que querés ver primero cuando abrís el proyecto cada mañana?',
+    ]
+  },
+  bim:{
+    label:'Equipo BIM · BIM Manager y Coordinadores',
+    intro:'Objetivo: estos profesionales serán los administradores funcionales de la plataforma. Conviene profundizar en su madurez técnica, su rol esperado en los workflows críticos y sus expectativas de soporte de Adekalyseis.',
+    qs:[
+      '¿Cuántos proyectos has gestionado en ACC Build (no BIM 360 legacy) y de qué escala?',
+      '¿Vas a administrar el proyecto como Project Admin o tendrás soporte de Adekalyseis para eso?',
+      '¿Cómo estructurarías la federación de modelos? ¿Frecuencia de subida y de coordinación?',
+      '¿Vas a usar Model Coordination de ACC o Navisworks externo para clash detection?',
+      '¿Qué nivel de detalle (LOD) esperás por disciplina y en qué fase del proyecto?',
+      '¿Cómo va a interactuar el modelo BIM con los workflows de Sheets, RFIs y SDI?',
+      '¿Vas a vincular el modelo con cronograma (4D) y/o costos (5D)? ¿Con qué herramienta?',
+      '¿Cuál es tu plan para entregar el modelo As-Built al cierre del proyecto?',
+      '¿Qué soporte específico necesitás de Adekalyseis durante el primer mes? Sé concreto.',
+      '¿Cómo manejarás conflictos de versionamiento si dos coordinadores editan el mismo modelo?',
+      '¿Vas a usar plantillas de issues, RFIs y SDI estandarizadas, o cada disciplina define las suyas?',
+      '¿Qué reglas de nomenclatura propones para archivos y carpetas en Docs?',
+    ]
+  },
+  obra:{
+    label:'Personal de obra · Jefes de disciplina / Site Engineers',
+    intro:'Objetivo: estos profesionales son los usuarios operacionales más críticos. La adopción del sistema depende de ellos. Hay que medir el nivel real (no el declarado) y detectar resistencias tempranas.',
+    qs:[
+      '¿Cuántas veces al día estimás que entrarás a ACC? ¿Desde qué dispositivo?',
+      '¿Tenés señal de internet confiable en tu zona de trabajo? Describí honestamente las zonas muertas.',
+      'Hoy, ¿cómo registrás un problema que detectás en obra? ¿Y cómo querés hacerlo en ACC?',
+      'Cuando necesitás info adicional del proyectista, ¿cuál es tu vía actual? ¿La cambiarías por RFI formal en ACC?',
+      '¿Qué tan dispuesto estás a sacar fotos con la app de ACC y geolocalizarlas?',
+      '¿Cómo manejás hoy las inspecciones diarias? ¿Lo trasladarías a Forms?',
+      '¿Qué información querés tener disponible offline para cuando no haya señal?',
+      '¿Quién te asigna trabajo y cómo te enterás de cambios de plan? ¿Eso podría vivir en Schedule?',
+      '¿Cuál es tu mayor frustración con sistemas digitales previos? ¿Qué te haría no usar ACC?',
+      '¿Qué tan cómodo te sentís usando una tablet en obra, con guantes y/o bajo lluvia?',
+      'Si tuvieras un botón para reportar algo crítico en obra, ¿qué información querrías cargar en menos de 1 minuto?',
+    ]
+  },
+  calidad:{
+    label:'Calidad y SST · Jefe de Calidad / Jefe SST',
+    intro:'Objetivo: estos perfiles son los owners naturales del módulo Forms. En obra aeroportuaria generan el mayor volumen de issues y documentación de cierre; hay que mapear sus workflows con precisión.',
+    qs:[
+      '¿Cuántas checklists distintas usás semanalmente en obra? Describí las 5 más frecuentes.',
+      '¿Qué porcentaje de tus inspecciones se documentan hoy digitalmente versus en papel?',
+      '¿Cómo registrás hoy una no conformidad? ¿La querés mapeada como Issue de tipo "Quality" en ACC?',
+      '¿Quién aprueba el cierre de una NC? ¿Coincide con el flujo de Issues que estás imaginando?',
+      '¿Qué ensayos de laboratorio tenés previstos? ¿Cómo se va a trazar el resultado en ACC?',
+      '¿Cuáles son los hitos contractuales de calidad/SST que requieren expediente formal de cierre?',
+      'Para el dossier de calidad final: ¿qué documentos van obligatoriamente y qué carpetas de ACC los contendrán?',
+      '¿Cómo gestionás permisos especiales (alturas, espacios confinados, trabajos en caliente)? ¿Forms con aprobación?',
+      '¿Qué KPIs de SST te van a pedir reportar mensualmente al cliente?',
+      'Si ocurre un cuasi-incidente, ¿quién carga la información primero en ACC y a quién le llega la alerta?',
+    ]
+  },
+  planco:{
+    label:'Planificación y Control de Costos',
+    intro:'Objetivo: son los responsables de mantener la información cuantitativa del proyecto. Su uso de ACC Cost y Schedule debe estar bien delimitado para no duplicar herramientas (P6, MS Project, Excel).',
+    qs:[
+      '¿Vas a planificar en Schedule de ACC o en una herramienta externa (P6, MS Project) e importar?',
+      '¿Qué frecuencia de actualización de avance manejás? ¿Diaria, semanal, quincenal?',
+      '¿Cómo vinculás el avance del cronograma con la certificación mensual de partidas?',
+      '¿ACC Cost va a ser tu fuente única de verdad o seguirás usando Excel en paralelo?',
+      '¿Quién aprueba mediciones, certificaciones y solicitudes de adicionales? Necesito el flujo exacto.',
+      '¿Cómo manejás cambios de alcance (RFCs) y cómo querés que queden trazados en ACC?',
+      '¿Qué reportes financieros mensuales necesitás generar? ¿Para Criba interno y para el cliente final?',
+      '¿Necesitás integración con SAP, otro ERP o sistema contable? Esto suele ser un punto crítico.',
+      '¿Tenés definido Earned Value (EV)? ¿CPI, SPI? ¿Querés que ACC los calcule o los hacés afuera?',
+      '¿Cuándo se considera cerrada una partida desde la perspectiva de control de costos?',
+    ]
+  },
+  sub:{
+    label:'Subcontratistas críticos',
+    intro:'Objetivo: los subcontratistas son los menos formados en ACC pero con un peso operacional alto. El riesgo de no-adopción es máximo en este segmento; el discovery debe ser específico y muy concreto.',
+    qs:[
+      '¿Tu empresa ya tiene licencia ACC propia o necesitás que Adekalyseis te asigne una desde su pool?',
+      '¿Cuántas personas de tu equipo necesitan acceso y con qué nivel?',
+      '¿Tu equipo está capacitado en ACC o necesitan onboarding? ¿Quién paga la capacitación?',
+      '¿Cuáles son las comunicaciones formales mínimas que tu contrato exige? ¿Las querés todas en ACC?',
+      '¿Vas a recibir RFIs, SDI o instrucciones de obra exclusivamente por ACC, o querés respaldo por email?',
+      '¿Cómo vas a entregar tu modelo BIM (si aplica) y con qué frecuencia?',
+      '¿Qué documentación de avance vas a subir tú directamente a ACC y cuál pasa por Criba?',
+      '¿Tu equipo en obra trabaja con tablets y conectividad? Si no, ¿cómo registrarán issues y fotos?',
+      '¿Qué garantías querés que queden trazadas digitalmente en ACC al final de tus trabajos?',
+    ]
+  }
+};
+
+const MODULES = ['Docs','Sheets','Reviews','Issues','RFIs','Submittals','Forms','Photos','Cost','Schedule','Insight'];
+const DEF_PERMS = {
+  directivos:['V','V','A','V','A','A','V','V','A','V','V'],
+  bim:       ['O','O','O','E','E','V','V','V','','V','O'],
+  obra:      ['E','V','V','E','E','V','E','E','','V','V'],
+  calidad:   ['V','V','','O','E','V','O','E','','','V'],
+  planco:    ['V','V','','V','','','','','O','O','V'],
+  sub:       ['V','V','','E','E','E','E','E','','V',''],
+};
+
+/* ══════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════ */
+let state = {
+  screen:'s-welcome', role:null, qIndex:0,
+  answers:{}, qFlags:{},
+  timerSec:0, timerInterval:null,
+};
+const SK = 'acc_iv_v2';
+
+/* ══════════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════════ */
+const STEP_LABELS = {
+  's-welcome':'Inicio','s-setup':'Encuadre','s-role':'Perfil',
+  's-interview':'Entrevista','s-wrap':'Cierre','s-perms':'Permisos','s-export':'Exportar'
+};
+const STEP_ORDER = ['s-welcome','s-setup','s-role','s-interview','s-wrap','s-perms','s-export'];
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.screen = id;
+  document.getElementById('tbStep').textContent = STEP_LABELS[id]||'';
+  const i = STEP_ORDER.indexOf(id);
+  document.getElementById('globalBar').style.width = (i/(STEP_ORDER.length-1)*100)+'%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  autosave();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SETUP VALIDATION
+══════════════════════════════════════════════════════════════ */
+function validateSetup(){
+  const nom = v('f-nombre'), car = v('f-cargo'), org = v('f-org');
+  if(!nom||!car||!org){
+    alert('Completá nombre, cargo y organización antes de continuar.');
+    return;
+  }
+  document.getElementById('tbPerson').textContent = nom + ' · ' + org;
+  document.getElementById('tbPerson').classList.add('show');
+  goTo('s-role');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROLE SELECTION
+══════════════════════════════════════════════════════════════ */
+document.getElementById('roleGrid').querySelectorAll('.role-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    const role = card.dataset.role;
+    selectRole(role);
+  });
+});
+
+function selectRole(role){
+  state.role = role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.toggle('sel', c.dataset.role===role));
+  document.getElementById('btnStartInterview').disabled = false;
+
+  // show preview
+  const prev = document.getElementById('rolePreview');
+  prev.style.display = 'block';
+  document.getElementById('rpTitle').textContent = Q[role].label;
+  document.getElementById('rpIntro').textContent = Q[role].intro;
+  const ql = document.getElementById('rpQList');
+  ql.innerHTML = Q[role].qs.map((q,i)=>`<div style="padding:5px 0 5px 0;border-bottom:1px dashed var(--s2);display:flex;gap:8px"><span style="font-family:var(--fm);font-size:10px;color:var(--b5);min-width:22px;flex-shrink:0">${String(i+1).padStart(2,'0')}</span><span>${q}</span></div>`).join('');
+
+  buildPermTable(role);
+  autosave();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INTERVIEW
+══════════════════════════════════════════════════════════════ */
+function startInterview(){
+  if(!state.role) return;
+  state.qIndex = 0;
+  startTimer();
+  buildDots();
+  renderQuestion();
+  goTo('s-interview');
+}
+
+function renderQuestion(){
+  const qs = Q[state.role].qs;
+  const i = state.qIndex;
+  const total = qs.length;
+  const key = `q_${i}`;
+
+  document.getElementById('ivQLabel').textContent = `Pregunta ${i+1} / ${total}`;
+  document.getElementById('ivQNum').textContent = `PREGUNTA ${String(i+1).padStart(2,'0')}`;
+  document.getElementById('ivQText').textContent = qs[i];
+
+  const ans = document.getElementById('ivAnswer');
+  ans.value = state.answers[key] || '';
+  ans.classList.toggle('has-content', !!(state.answers[key]||'').trim());
+  ans.focus();
+
+  // flag btn state
+  const flagged = !!state.qFlags[key];
+  const fb = document.getElementById('ivFlagBtn');
+  fb.classList.toggle('flagged', flagged);
+  document.getElementById('ivFlagLabel').textContent = flagged ? 'Bandera marcada' : 'Marcar bandera';
+
+  // nav buttons
+  document.getElementById('btnPrev').disabled = i===0;
+  const nextBtn = document.getElementById('btnNext');
+  if(i===total-1){
+    nextBtn.textContent = 'Finalizar ✓';
+    nextBtn.className = 'nav-btn finish';
+  } else {
+    nextBtn.textContent = 'Siguiente →';
+    nextBtn.className = 'nav-btn next';
+  }
+
+  updateDots();
+}
+
+function saveCurrentAnswer(){
+  const key = `q_${state.qIndex}`;
+  const val = document.getElementById('ivAnswer').value;
+  state.answers[key] = val;
+  updateDots();
+  autosave();
+}
+
+function onAnswerInput(){
+  const ans = document.getElementById('ivAnswer');
+  ans.classList.toggle('has-content', !!ans.value.trim());
+  saveCurrentAnswer();
+}
+
+function nextQ(){
+  saveCurrentAnswer();
+  const total = Q[state.role].qs.length;
+  if(state.qIndex < total-1){
+    state.qIndex++;
+    renderQuestion();
+  } else {
+    stopTimer();
+    goTo('s-wrap');
+  }
+}
+
+function prevQ(){
+  saveCurrentAnswer();
+  if(state.qIndex > 0){
+    state.qIndex--;
+    renderQuestion();
+  }
+}
+
+function skipQ(){
+  saveCurrentAnswer();
+  const total = Q[state.role].qs.length;
+  if(state.qIndex < total-1){
+    state.qIndex++;
+    renderQuestion();
+  } else {
+    stopTimer();
+    goTo('s-wrap');
+  }
+}
+
+function toggleQuestionFlag(){
+  const key = `q_${state.qIndex}`;
+  state.qFlags[key] = !state.qFlags[key];
+  const flagged = state.qFlags[key];
+  const fb = document.getElementById('ivFlagBtn');
+  fb.classList.toggle('flagged', flagged);
+  document.getElementById('ivFlagLabel').textContent = flagged ? 'Bandera marcada' : 'Marcar bandera';
+  updateDots();
+  autosave();
+}
+
+// keyboard navigation
+document.addEventListener('keydown', e=>{
+  if(state.screen !== 's-interview') return;
+  if(e.ctrlKey && e.key==='Enter'){ e.preventDefault(); nextQ(); }
+  if(e.ctrlKey && e.key==='ArrowLeft'){ e.preventDefault(); prevQ(); }
+});
+
+/* DOTS */
+function buildDots(){
+  const total = Q[state.role].qs.length;
+  const container = document.getElementById('ivDots');
+  container.innerHTML = Array.from({length:total},(_,i)=>`<div class="q-dot" id="dot_${i}" title="Pregunta ${i+1}" onclick="jumpTo(${i})"></div>`).join('');
+}
+function updateDots(){
+  const total = Q[state.role].qs.length;
+  for(let i=0;i<total;i++){
+    const d = document.getElementById('dot_'+i);
+    if(!d) continue;
+    const key = `q_${i}`;
+    d.className = 'q-dot';
+    if(i===state.qIndex) d.classList.add('active');
+    else if(state.qFlags[key]) d.classList.add('flag');
+    else if((state.answers[key]||'').trim()) d.classList.add('done');
+  }
+}
+function jumpTo(i){
+  saveCurrentAnswer();
+  state.qIndex = i;
+  renderQuestion();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════════════════════ */
+function startTimer(){
+  state.timerSec = 0;
+  clearInterval(state.timerInterval);
+  const el = document.getElementById('timerDisplay');
+  el.classList.add('running');
+  state.timerInterval = setInterval(()=>{
+    state.timerSec++;
+    const m = String(Math.floor(state.timerSec/60)).padStart(2,'0');
+    const s = String(state.timerSec%60).padStart(2,'0');
+    document.getElementById('timerVal').textContent = `${m}:${s}`;
+  },1000);
+}
+function stopTimer(){
+  clearInterval(state.timerInterval);
+  document.getElementById('timerDisplay').classList.remove('running');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FLAGS
+══════════════════════════════════════════════════════════════ */
+function flagToggle(cb, id){
+  const el = document.getElementById(id);
+  el.classList.toggle('checked', cb.checked);
+  autosave();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PERMISSIONS TABLE
+══════════════════════════════════════════════════════════════ */
+function buildPermTable(role){
+  const defs = DEF_PERMS[role]||[];
+  const tbody = document.getElementById('permBody');
+  tbody.innerHTML = MODULES.map((mod,i)=>{
+    const def = defs[i]||'';
+    return `<tr>
+      <td class="mod-name">${mod}</td>
+      <td>
+        <select class="perm-sel v${def||'blank'}" id="pm_${mod}" onchange="this.className='perm-sel v'+(this.value||'blank'); autosave()">
+          <option value="" ${def===''?'selected':''}>— sin acceso —</option>
+          <option value="O" ${def==='O'?'selected':''}>O — Owner/Admin</option>
+          <option value="A" ${def==='A'?'selected':''}>A — Approver</option>
+          <option value="E" ${def==='E'?'selected':''}>E — Editor</option>
+          <option value="V" ${def==='V'?'selected':''}>V — Viewer</option>
+        </select>
+      </td>
+      <td><input class="perm-note" id="pn_${mod}" type="text" placeholder="Nota u observación…" oninput="autosave()"/></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AUTOSAVE / STORAGE
+══════════════════════════════════════════════════════════════ */
+let saveTimer = null;
+function autosave(){
+  setDot('saving');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ doSave(); setDot('ok'); }, 700);
+}
+function setDot(s){
+  ['dot1','dot4'].forEach(id=>{
+    const d = document.getElementById(id);
+    if(d) d.className = 'save-dot'+(s==='ok'?' ok':s==='saving'?' saving':'');
+  });
+  ['lbl1','lbl4'].forEach(id=>{
+    const l = document.getElementById(id);
+    if(l) l.textContent = s==='ok'?'guardado':s==='saving'?'guardando…':'';
+  });
+}
+function doSave(){
+  const data = collectAll();
+  data._state = {role:state.role, qIndex:state.qIndex, answers:state.answers, qFlags:state.qFlags, timerSec:state.timerSec, screen:state.screen};
+  localStorage.setItem(SK, JSON.stringify(data));
+}
+function collectAll(){
+  const d = {};
+  document.querySelectorAll('input[type=text],input[type=email],input[type=date],input[type=time],textarea').forEach(el=>{ if(el.id) d[el.id]=el.value; });
+  document.querySelectorAll('select').forEach(el=>{ if(el.id) d[el.id]=el.value; });
+  document.querySelectorAll('input[type=radio]:checked').forEach(el=>{ d['r_'+el.name]=el.value; });
+  document.querySelectorAll('input[type=checkbox]').forEach(el=>{ d['cb_'+el.value]=el.checked; });
+  return d;
+}
+function v(id){ return (document.getElementById(id)||{}).value||''; }
+function radio(name){ return (document.querySelector(`input[name="${name}"]:checked`)||{}).value||''; }
+
+/* ══════════════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════════════ */
+function goTo_export_with_summary(){
+  // build summary cards
+  const total = state.role ? Q[state.role].qs.length : 0;
+  const answered = Object.values(state.answers).filter(x=>x.trim()).length;
+  const flags = document.querySelectorAll('input[type=checkbox]:checked').length;
+  const mins = Math.round(state.timerSec/60);
+
+  document.getElementById('expTitle').textContent = `Entrevista: ${v('f-nombre')||'—'}`;
+  document.getElementById('expSubtitle').textContent = `${v('f-cargo')||'—'} · ${v('f-org')||'—'} · ${v('f-fecha')||'—'}`;
+  document.getElementById('expSummary').innerHTML = [
+    {val:answered+'/'+total, label:'Preguntas respondidas'},
+    {val:mins+'min', label:'Duración de la sesión'},
+    {val:flags, label:'Banderas marcadas'},
+  ].map(c=>`<div class="sum-card"><div class="sum-val">${c.val}</div><div class="sum-label">${c.label}</div></div>`).join('');
+}
+
+function buildMD(){
+  const rol = state.role ? Q[state.role].label : 'No definido';
+  const nombre = v('f-nombre')||'—', cargo = v('f-cargo')||'—', org = v('f-org')||'—';
+  const fecha = v('f-fecha')||'—', hora = v('f-hora')||'—', mod = v('f-modalidad')||'—';
+  const mins = Math.round(state.timerSec/60);
+
+  let md = `# Expediente de Entrevista · Discovery ACC Build\n`;
+  md += `**Proyecto:** Aeropuerto · **Contratante:** Criba · **Consultoría:** Adekalyseis  \n`;
+  md += `**Consultor:** Pablo Andrés Díaz Flores  \n\n---\n\n`;
+
+  md += `## 1. Datos del entrevistado\n\n`;
+  md += `| | |\n|---|---|\n`;
+  md += `| **Nombre** | ${nombre} |\n`;
+  md += `| **Cargo** | ${cargo} |\n`;
+  md += `| **Organización** | ${org} |\n`;
+  if(v('f-empresa')) md += `| **Empresa** | ${v('f-empresa')} |\n`;
+  if(v('f-email')) md += `| **Email** | ${v('f-email')} |\n`;
+  md += `| **Fecha** | ${fecha} |\n`;
+  md += `| **Hora** | ${hora} |\n`;
+  md += `| **Modalidad** | ${mod} |\n`;
+  md += `| **Perfil** | ${rol} |\n`;
+  md += `| **Duración** | ${mins} min |\n`;
+  if(v('f-obs-previas')) md += `\n**Observaciones previas:** ${v('f-obs-previas')}\n`;
+  md += '\n';
+
+  md += `## 2. Preguntas y respuestas\n\n`;
+  if(state.role){
+    const d = Q[state.role];
+    md += `> *${d.intro}*\n\n`;
+    d.qs.forEach((q,i)=>{
+      const key = `q_${i}`;
+      const ans = (state.answers[key]||'').trim()||'_Sin respuesta registrada_';
+      const flagged = state.qFlags[key] ? ' ⚑' : '';
+      md += `### P${String(i+1).padStart(2,'0')}${flagged} — ${q}\n\n${ans}\n\n`;
+    });
+  }
+
+  md += `## 3. Datos operativos complementarios\n\n`;
+  md += `| | |\n|---|---|\n`;
+  md += `| **Experiencia ACC** | ${v('w-exp')} |\n`;
+  md += `| **Dispositivo** | ${v('w-dispositivo')} |\n`;
+  md += `| **Conectividad** | ${v('w-conectividad')} |\n`;
+  md += `| **Licencia ACC** | ${radio('wlic')} |\n`;
+  md += `| **Capacitación** | ${radio('wcap')} |\n`;
+  if(v('w-herramientas')) md += `| **Herramientas actuales** | ${v('w-herramientas')} |\n`;
+  md += '\n';
+
+  md += `## 4. Banderas detectadas\n\n`;
+  const cbs = [...document.querySelectorAll('input[type=checkbox]:checked')];
+  if(!cbs.length){ md += '_Ninguna bandera marcada._\n\n'; }
+  else { cbs.forEach(cb=>{ md += `- ⚑ ${cb.value}\n`; }); md += '\n'; }
+  if(v('w-flags-det')) md += `**Detalle:** ${v('w-flags-det')}\n\n`;
+
+  md += `## 5. Preguntas con bandera marcada durante la sesión\n\n`;
+  const qFlagged = Object.entries(state.qFlags).filter(([,v])=>v);
+  if(!qFlagged.length){ md += '_Ninguna pregunta marcada._\n\n'; }
+  else {
+    qFlagged.forEach(([key])=>{
+      const i = parseInt(key.replace('q_',''));
+      const q = Q[state.role].qs[i];
+      md += `- **P${String(i+1).padStart(2,'0')}**: ${q}\n`;
+    });
+    md += '\n';
+  }
+
+  md += `## 6. Permisos propuestos por módulo\n\n`;
+  md += `| Módulo | Nivel | Nota |\n|---|---|---|\n`;
+  MODULES.forEach(m=>{
+    const sel = document.getElementById('pm_'+m);
+    const note = document.getElementById('pn_'+m);
+    const lbl = sel ? (sel.options[sel.selectedIndex].text||'—') : '—';
+    md += `| ${m} | ${lbl} | ${note?note.value:''} |\n`;
+  });
+  md += '\n';
+
+  md += `## 7. Observaciones del consultor _(confidencial)_\n\n`;
+  md += `**Evaluación de la sesión:** ${radio('weval')}\n\n`;
+  if(v('w-perfil')) md += `**Perfil digital percibido:** ${v('w-perfil')}\n\n`;
+  if(v('w-compromisos')) md += `**Compromisos asumidos:** ${v('w-compromisos')}\n\n`;
+  if(v('w-pasos')) md += `**Próximos pasos:** ${v('w-pasos')}\n\n`;
+  if(v('w-notas')) md += `**Notas internas:** ${v('w-notas')}\n\n`;
+
+  md += `---\n\n`;
+  md += `_Expediente generado por el sistema de entrevistas · Discovery ACC Build · Adekalyseis_  \n`;
+  md += `_Generado: ${new Date().toLocaleString('es-AR')}_\n`;
+  return md;
+}
+
+function downloadMD(){
+  const md = buildMD();
+  const nom = (v('f-nombre')||'sin_nombre').replace(/\s+/g,'_').toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const fecha = (v('f-fecha')||'sin_fecha').replace(/-/g,'');
+  const blob = new Blob([md],{type:'text/markdown;charset=utf-8'});
+  const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:`entrevista_${nom}_${fecha}.md`});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+let previewOpen = false;
+function togglePreview(){
+  previewOpen = !previewOpen;
+  const el = document.getElementById('mdPreview');
+  el.style.display = previewOpen ? 'block':'none';
+  if(previewOpen) el.textContent = buildMD();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SESSION MANAGEMENT
+══════════════════════════════════════════════════════════════ */
+function newSession(){
+  if(!confirm('¿Empezar una nueva entrevista? Los datos actuales quedarán en el archivo descargado.')) return;
+  localStorage.removeItem(SK);
+  location.reload();
+}
+function resumeSession(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(SK)||'{}');
+    // restore fields
+    Object.entries(raw).forEach(([k,val])=>{
+      if(k.startsWith('_')) return;
+      const el = document.getElementById(k);
+      if(!el) return;
+      if(el.type==='radio'||el.type==='checkbox') return;
+      el.value = val;
+    });
+    // radios
+    Object.entries(raw).forEach(([k,val])=>{
+      if(!k.startsWith('r_')) return;
+      const name = k.slice(2);
+      const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+      if(el) el.checked = true;
+    });
+    // checkboxes
+    document.querySelectorAll('input[type=checkbox]').forEach(el=>{
+      if(raw['cb_'+el.value]) el.checked = true;
+      if(el.checked) el.closest('.flag-item')?.classList.add('checked');
+    });
+    // restore state
+    if(raw._state){
+      const s = raw._state;
+      if(s.role){ state.role = s.role; selectRole(s.role); }
+      state.answers = s.answers||{};
+      state.qFlags = s.qFlags||{};
+      state.timerSec = s.timerSec||0;
+      state.qIndex = s.qIndex||0;
+      document.getElementById('tbPerson').textContent = (v('f-nombre')||'—')+' · '+(v('f-org')||'—');
+      document.getElementById('tbPerson').classList.add('show');
+    }
+    goTo('s-interview');
+    buildDots();
+    renderQuestion();
+  } catch(e){ alert('No se pudo retomar la sesión.'); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INTERCEPT goTo for export screen
+══════════════════════════════════════════════════════════════ */
+const _goTo = goTo;
+window.goTo = function(id){
+  if(id==='s-export') goTo_export_with_summary();
+  _goTo(id);
+};
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // set today
+  const today = new Date();
+  const fField = document.getElementById('f-fecha');
+  if(fField) fField.value = today.toISOString().split('T')[0];
+  const hField = document.getElementById('f-hora');
+  if(hField) hField.value = today.getHours().toString().padStart(2,'0')+':'+today.getMinutes().toString().padStart(2,'0');
+
+  // check for saved session
+  const saved = localStorage.getItem(SK);
+  if(saved){
+    try{
+      const d = JSON.parse(saved);
+      const nom = d['f-nombre']||'';
+      if(nom){
+        document.getElementById('btnResume').style.display = 'inline-flex';
+        document.getElementById('resumeNotice').textContent = `Sesión guardada: ${nom} · ${d['f-cargo']||''} · ${d['f-fecha']||''}`;
+        document.getElementById('resumeNotice').classList.add('show');
+      }
+    } catch(e){}
+  }
+
+  buildPermTable(null);
+});
+</script>
+</body>
+</html>
